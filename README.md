@@ -1,11 +1,11 @@
-** This is the Plei Finance Feed
+## This is the Plei Finance Feed
 A set of tools and documentation to extract data from the different Blockchains and feed finance systems (potentially as well others)
 
-** Current Status
+## Current Status
 Priority is Ronin blockchain, as for Ethereum or Binance we have ways to download data
 On top of that, Ronin has many more transactions, and of different kind, that have to be processed automatically to be able to make sense of that
 
-** Process
+## Process
 Using Covalent we can download all transactions in a JSON. You will need an API KEY for that.
 
 Doc in Covalenthq:
@@ -17,7 +17,7 @@ curl -X GET "https://api.covalenthq.com/v1/2020/address/ronin:237b86abafd83da3c5
 
 Once we have the data in a file (myfile.json) this has to be processed using the python script "extract.py" (this name will certainly have to change one day) , which produces a CSV that can then be imported in excel for now
 
-** TODO
+## TODO
 Include processing of Binance blockchain and Ethereum
 Add a configuration file with all different Plei addresses to scan
 Feed a bd in the backend with the data, ensuring incremental updates are possible
