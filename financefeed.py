@@ -3,11 +3,22 @@ import csv
 import json
 import sys
 import ast
+import re
 
 cnames={
     "0x213073989821f738a7ba3520c3d31a1f9ad31bbd": "Marketplace Contract", 
-    "0x0000000000000000000000000000000000000000": "0x0"
+    "0x0000000000000000000000000000000000000000": "0x0",
+    "0x7d0556d55ca1a92708681e2e231733ebd922597d": "Katana Router Contract",
 }
+
+ccies={
+    "ethereum": "ETH",
+    "ronin": "RON",
+    "binance": "BNB"
+}
+
+covaApiKey = "ckey_55f1971fa82749ae89275572b5b"
+
 
 def cn(address):
 
@@ -34,24 +45,24 @@ def paramValue(params, name):
 
 
 
-def extract(output,roninAddr):
+def extract(output,roninAddr, platform):
     
     print ("#,Date,TxType,FromAddress,ToAddress, Ccy, Amount, Ccy2, Amount2, Description")
     i = 0
     for item in output["data"]["items"]:
         amount = 0
         description=""
-        # Lets check if there is RON amount
+        # Lets check if there is an amount
         if int(item["value"]) > 0 :
-            amount=dispAmt(item["value"],"RON")
+            amount=dispAmt(item["value"],ccies[platform])
             
             print(str(i)+","+
             item["block_signed_at"]+","+
             "transfer," +
             cn(item["from_address"])+","+
             cn(item["to_address"])+","+
-            "RON"+","+
-            f"{amount:.9f}"+",,,RON Transfer "+ "Tx " + item["tx_hash"])
+            ccies[platform] +","+
+            f"{amount:.9f}"+",,, Transfer "+ "Tx " + item["tx_hash"])
 
         # This must be a ERC20 transfer (SLP most likely)
         if int(item["value"]) == 0 :
@@ -160,26 +171,87 @@ def extract(output,roninAddr):
 
             print(str(i)+","+
             item["block_signed_at"]+","+
-            "Fee,"+
+            "Fee "+ platform + "," +
             cn(item["from_address"])+","+
             "Fees paid"+","+
-            "RON"+","+
-            f"{amount:.9f}"+",,,Fees paid in Ronin")
+            ccies[platform]+","+
+            f"{amount:.9f}"+",,,Fees paid")
 
         i=i+1
 
-covaApiKey = "ckey_55f1971fa82749ae89275572b5b"
-with open("accuntlist.tsv") as tsv:
-    for line in csv.reader(tsv, dialect="excel-tab"):
-        addr = line[1].replace("ronin:","0x")
+if len(sys.argv) ==1:
+    print("You have to provide an input file")
+    exit
+else:
+    inputFile = sys.argv[1]
 
+
+with open(inputFile) as tsv:
+    for line in csv.reader(tsv, dialect="excel-tab"):
+        if not line:
+            continue
+        if re.search("^#", line[0]):
+            continue
+
+        addr = line[1]
+        if "ronin:" in line[1]:
+            addr = line[1].replace("ronin:","0x")
+        
         cnames[addr]=line[0] + " " + line[2]
 
+
 with open("accuntlist.tsv") as tsv:
     for line in csv.reader(tsv, dialect="excel-tab"):
-        roninAddr=line[1]
-        print("Processing address "+ roninAddr)
-        covaReq ="https://api.covalenthq.com/v1/2020/address/" + roninAddr+"/transactions_v2/?key="+covaApiKey+"&page-size=7000&page-number=0"
+        if not line:
+            continue
+        if re.search("^#", line[0]):
+            continue
 
-        r = requests.get(covaReq)
-        extract(r.json(),roninAddr)
+        addr = line[1]
+        if "ronin:" in line[1]:
+            addr = line[1].replace("ronin:","0x")
+        
+        cnames[addr]=line[0] + " " + line[2]
+
+
+with open(inputFile) as tsv:
+    for line in csv.reader(tsv, dialect="excel-tab"):
+        if not line:
+            continue
+        if re.search("^#", line[0]):
+            continue
+
+        roninAddr=line[1]
+        if len(line) == 3:
+            platform=line[2]
+        else:
+            platform="ronin"
+
+        print("Processing address "+ platform + " - " + roninAddr)
+        chainid=""
+        if platform == "binance_sc":
+            chainid="56"
+
+        if platform == "ethereum":
+            chainid="1"
+            
+        else:
+            chainid="2020"
+        
+        pageSize = 7000
+        covaReq ="https://api.covalenthq.com/v1/"+ chainid + \
+        "/address/" + roninAddr+"/transactions_v2/?"+ \
+        "key="+covaApiKey+ \
+        "&page-size="+str(pageSize)+ \
+        "&page-number=0"
+
+        response = requests.get(covaReq).json()
+        if response["error"]:
+            print("Covalent backend gave an error, this is the full response:")
+            print(response)
+            continue
+        elif len( response["data"]["items"]) == 0:
+            print("No transactions found, this is the full response:")
+            print(response)
+        else:
+            extract(response,roninAddr, platform)
