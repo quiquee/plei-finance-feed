@@ -2,8 +2,9 @@
 A set of tools and documentation to extract data from the different Blockchains and feed finance systems (potentially as well others)
 
 ## Current Status
-Priority is Ronin blockchain, as for Ethereum or Binance we have ways to download data
-On top of that, Ronin has many more transactions, and of different kind, that have to be processed automatically to be able to make sense of that
+Include processing of Binance blockchain, matic (poligon) and Ethereum
+It feeds a database (connection for now hardcoded in peidb.py)
+No check for dups for now, it does import incremental by platform/blocknumber
 
 ## Process
 Build a file *accountlist.tsv* with the different addresses to scan, transactions for those addresses are downloaded using Covalent and then processed in a way that can be imported for finance systems
@@ -16,6 +17,13 @@ Doc in Covalenthq:
 https://www.covalenthq.com/docs/api/#/0/Get%20transactions%20for%20address/USD/1
 
 ## TODO
-Include processing of Binance blockchain and Ethereum
+Smarter updates, other than blocknumber, because if we add a new address, we want to be able
+to catch up the history
+Improve pleidb.py with configuration file
+Better reporting
 
-Feed a bd in the backend with the data, ensuring incremental updates are possible
+Create db 
+```
+cat createdb.sql| psql -d plei
+
+```
