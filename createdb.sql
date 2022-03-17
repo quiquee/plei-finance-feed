@@ -5,7 +5,7 @@ CREATE TABLE accbctx (
 	platform varchar(20),
 	block INT NOT NULL,
 	txtime TIMESTAMP NOT NULL,
-	tx VARCHAR(59) NOT NULL,
+	txid VARCHAR(80) NOT NULL,
 	seq INT NOT NULL,
 	txtype VARCHAR(20),
 	from_addr VARCHAR(60) NOT NULL,
@@ -23,8 +23,8 @@ CREATE TABLE accbctx (
 DROP TABLE accbctx_raw;
 CREATE TABLE accbctx_raw (
 	id serial PRIMARY KEY,
-	platform varchar(20),
-	block INT NOT NULL,
+	platform varchar(20) NOT NULL,
+	txid varchar(80) NOT NULL UNIQUE,
 	tx JSONB not NULL
 );
 
