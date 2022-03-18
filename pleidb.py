@@ -1,7 +1,3 @@
-# select platform,tx->'block' , tx->'txtype',tx->'date', 
-# tx->'from', tx->'to', 
-# tx->'ccy' , tx->'amount', tx->'ccy2',tx->'amount2', 
-# tx->'desciption' from accbctx_raw ;
 
 import psycopg2, json
 
@@ -73,28 +69,26 @@ def saveAcc(platform,data):
         except Exception as error:
             
             # cant match this using errors....
-            if (error.pgcode == '23505' or error.pgcode =='25P02' ):
-                print("Warning: transaction in " + platform + " Tx-Seq " + tx["tx"] + "-" +str(tx["seq"])+ " already in database, skipping")
+            if (error.pgcode == '23505' or error.pgcode =='25aP02' ):                
+                print("Warning: duplicate transaction " + platform + " Tx-Seq " + tx["tx"] + "-" +str(tx["seq"])+ ", skipping")                                
+                conn.rollback()
                 continue
 
             else:
                 print ("Oops! An exception has occured:", error)
-                print ("Exception TYPE:", type(error), error.pgcode )
-                print(postgres_insert_query, record_to_insert)
+                print ("Exception TYPE:", type(error), error.pgcode )   
+                conn.rollback()             
                 break
 
         
-        count = count + cursor.rowcount
-        
+        count = count + cursor.rowcount            
     return count
-
-
 
 def test_import():
     with open('./json_data.json') as json_file:
         data = json.load(json_file)
-        saveAcc('ronin',data)
-
-
+        print("Trying to import: " + len(data))
+        imported=saveAcc('ronin',data)
+        print("Imported: " + len(data) + " out of " + len(data))
 
 print(getLastBlock("Lunacian ventana Fraud"))

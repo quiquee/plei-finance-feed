@@ -52,7 +52,11 @@ def extract(output,paramaddress, platform):
     
     i = 0
     data=[]
-    cnparam = cn(paramaddress)
+    
+    cnparam = cn(paramaddress.replace("ronin:","0x"))
+    print("Cn param: (" + paramaddress + ") " + cnparam )
+    
+
     for item in output["data"]["items"]:
         xdata={
                 "block": item["block_height"],
@@ -100,8 +104,7 @@ def extract(output,paramaddress, platform):
             xdata['description']="Fees paid for transaction" 
             if cnparam == xdata["from"] or cnparam == xdata["to"]:
                 print(xdata)
-                data.append(xdata)            
-                j=j+1
+                data.append(xdata)                            
         
         j=199
         for event in item["log_events"]:
@@ -238,7 +241,8 @@ def extract(output,paramaddress, platform):
                 if cnparam == xdata["from"] or cnparam == xdata["to"]:
                     print(xdata)
                     data.append(xdata)
-
+                else:
+                    print(cnparam + "!=" + xdata["from"] +" or " + xdata["to"])
     i=i+1
 
     return data
@@ -337,4 +341,7 @@ with open(inputFile) as tsv:
             data = extract(response,address, platform)
             with open(logdir+'/pleacc-' +platform + '-' + address + '.json', 'w') as outfile:
                 json.dump(data, outfile)
-                pleidb.saveAcc(platform,data)
+                print("Trying to import: " + str(len(data)))        
+                imported=pleidb.saveAcc(platform,data)
+                print("Imported: " + str(imported) + " out of " + str(len(data)))
+                
