@@ -8,4 +8,5 @@ ADD accounts /plei-acc/accounts
 
 RUN pip install psycopg2 requests
 
-CMD [ "python", "financefeed.py accounts/accountlist.tsv" ]
+# CMD [ "python", "financefeed.py" ,"accounts/accountlist.tsv" ]
+CMD bash
