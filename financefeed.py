@@ -319,7 +319,7 @@ with open(inputFile) as tsv:
         
 
 
-        pageSize = 7000
+        pageSize = 100
         covaReq ="https://api.covalenthq.com/v1/"+ chainid + \
         "/address/" + address+"/transactions_v2/?"+ \
         "key="+covaApiKey+ \
